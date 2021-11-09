@@ -1,7 +1,9 @@
 import requests
 
-
 # See API description on https://testbase.atlassian.net/wiki/spaces/USERS/pages/592511089
+from helpers.test_helper import generate_token
+
+
 class UserAPI:
 
     def __init__(self):
@@ -12,7 +14,8 @@ class UserAPI:
         self._headers = {
             "Content-Type": "application/json"
         }
-        # self._headers.update(some_bearer_token))
+        self._auth_header = generate_token()
+        self._headers.update(self._auth_header)
 
     def create_user_with_tasks(self, user):
         url = self.base_url + self.create_user_with_tasks_endpoint
@@ -32,7 +35,8 @@ class UserAPI:
         ]
         response = requests.post(
             url=url,
-            files=files
+            files=files,
+            headers=self._auth_header
         )
         assert response.status_code == 200
         assert "error" not in response.text, f"{response.text}"
@@ -40,7 +44,9 @@ class UserAPI:
 
     def delete_avatar(self, email):
         url = f"{self.base_url}{self.delete_avatar_endpoint}/?email={email}"
-        response = requests.delete(url=url)
+        response = requests.delete(
+            url=url,
+            headers=self._auth_header)
         assert response.status_code == 200
         assert "error" not in response.text, f"{response.text}"
         return response.json()
